@@ -32,25 +32,30 @@ jobs:
         with:
           gradle-version: '9.2.0'
 
+      - name: Record workflow run id
+        shell: bash
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          printf '%s\n' "$GITHUB_RUN_ID" > "$GITHUB_WORKSPACE/dist/build-run-id.txt"
+
       - name: Build patch classes against Minecraft 1.21.1 and Visible Traders 1.3.2
         id: gradle_build
         continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
-          mkdir -p "$GITHUB_WORKSPACE/dist"
           gradle -p backports/1.21.1-cartographer-fix clean remapJar --stacktrace 2>&1 | tee "$GITHUB_WORKSPACE/dist/build-1.21.1-cartographer-fix.log"
 
-      - name: Commit build log
+      - name: Commit build diagnostics
         if: always()
         shell: bash
         run: |
           set -euxo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add dist/build-1.21.1-cartographer-fix.log
+          git add dist/build-run-id.txt dist/build-1.21.1-cartographer-fix.log
           if ! git diff --cached --quiet; then
-            git commit -m 'Record Visible Traders 1.21.1 fix build log'
+            git commit -m 'Record Visible Traders 1.21.1 fix build diagnostics'
             git push origin HEAD:fix/cartographer-air-trade
           fi
 
