@@ -1,0 +1,39 @@
+name: Fetch Visible Traders 1.3.2 reference
+
+on:
+  push:
+    branches:
+      - fix/cartographer-air-trade
+    paths:
+      - .github/workflows/fetch-1.3.2-reference.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-reference:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/cartographer-air-trade
+
+      - name: Download exact published 1.3.2 artifacts
+        run: |
+          set -euxo pipefail
+          mkdir -p reference/1.3.2/source
+          curl -fL 'https://cdn.modrinth.com/data/AhllI99f/versions/nEDGMR8b/VisibleTraders-1.3.2-sources.jar' -o /tmp/visibletraders-sources.jar
+          curl -fL 'https://cdn.modrinth.com/data/AhllI99f/versions/nEDGMR8b/VisibleTraders-1.3.2.jar' -o /tmp/visibletraders.jar
+          unzip -q /tmp/visibletraders-sources.jar -d reference/1.3.2/source
+          unzip -p /tmp/visibletraders.jar fabric.mod.json > reference/1.3.2/fabric.mod.json
+          unzip -l /tmp/visibletraders.jar > reference/1.3.2/binary-contents.txt
+          sha256sum /tmp/visibletraders-sources.jar /tmp/visibletraders.jar > reference/1.3.2/SHA256SUMS.txt
+
+      - name: Commit reference source to fix branch
+        run: |
+          set -euxo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reference/1.3.2
+          git commit -m 'Add exact published Visible Traders 1.3.2 reference source'
+          git push origin HEAD:fix/cartographer-air-trade
