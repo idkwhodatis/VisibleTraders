@@ -1,0 +1,115 @@
+name: Build Visible Traders 1.21.1 Cartographer Fix
+
+on:
+  push:
+    branches:
+      - fix/cartographer-air-trade
+    paths:
+      - 'backports/1.21.1-cartographer-fix/**'
+      - '.github/workflows/build-1.21.1-cartographer-fix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/cartographer-air-trade
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build patch classes against Minecraft 1.21.1 and Visible Traders 1.3.2
+        run: gradle -p backports/1.21.1-cartographer-fix clean remapJar --stacktrace
+
+      - name: Merge patch into exact published Visible Traders 1.3.2 jar
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          PATCH_JAR="$(find backports/1.21.1-cartographer-fix/build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*sources*' ! -name '*dev*' | head -n 1)"
+          test -n "$PATCH_JAR"
+
+          curl -fL 'https://cdn.modrinth.com/data/AhllI99f/versions/nEDGMR8b/VisibleTraders-1.3.2.jar' -o /tmp/VisibleTraders-1.3.2.jar
+          echo '39d70e06c8c39af5575431ceded4a14c662b6e2ccf530b65f4551789066e0f10  /tmp/VisibleTraders-1.3.2.jar' | sha256sum -c -
+
+          rm -rf /tmp/visibletraders-original /tmp/visibletraders-patch
+          mkdir -p /tmp/visibletraders-original /tmp/visibletraders-patch
+          unzip -q /tmp/VisibleTraders-1.3.2.jar -d /tmp/visibletraders-original
+          unzip -q "$PATCH_JAR" -d /tmp/visibletraders-patch
+
+          test -d /tmp/visibletraders-patch/dev/idkwhodatis/visibletradersfix
+          test -f /tmp/visibletraders-patch/visibletraders-cartographer-fix.mixins.json
+
+          cp -a /tmp/visibletraders-patch/dev /tmp/visibletraders-original/
+          cp /tmp/visibletraders-patch/visibletraders-cartographer-fix.mixins.json /tmp/visibletraders-original/
+          find /tmp/visibletraders-patch -maxdepth 1 -type f -name '*.refmap.json' -exec cp {} /tmp/visibletraders-original/ \;
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('/tmp/visibletraders-original/fabric.mod.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          data['version'] = '1.3.2-cartographer-fix.1'
+          mixins = data.setdefault('mixins', [])
+          config = 'visibletraders-cartographer-fix.mixins.json'
+
+          def mixin_name(entry):
+              if isinstance(entry, str):
+                  return entry
+              if isinstance(entry, dict):
+                  return entry.get('config')
+              return None
+
+          if config not in [mixin_name(entry) for entry in mixins]:
+              mixins.append(config)
+
+          path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+          PY
+
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          (
+            cd /tmp/visibletraders-original
+            zip -qr "$GITHUB_WORKSPACE/dist/VisibleTraders-1.3.2-cartographer-fix.1.jar" .
+          )
+
+          jar tf dist/VisibleTraders-1.3.2-cartographer-fix.1.jar | grep -F 'dev/idkwhodatis/visibletradersfix/mixin/FutureMerchantOfferMixin.class'
+          jar tf dist/VisibleTraders-1.3.2-cartographer-fix.1.jar | grep -F 'dev/idkwhodatis/visibletradersfix/mixin/LockedTradeDataMixin.class'
+          jar tf dist/VisibleTraders-1.3.2-cartographer-fix.1.jar | grep -F 'visibletraders-cartographer-fix.mixins.json'
+          unzip -p dist/VisibleTraders-1.3.2-cartographer-fix.1.jar fabric.mod.json | python3 -m json.tool
+          sha256sum dist/VisibleTraders-1.3.2-cartographer-fix.1.jar > dist/VisibleTraders-1.3.2-cartographer-fix.1.jar.sha256
+
+      - name: Upload patched jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: VisibleTraders-1.3.2-cartographer-fix.1
+          path: |
+            dist/VisibleTraders-1.3.2-cartographer-fix.1.jar
+            dist/VisibleTraders-1.3.2-cartographer-fix.1.jar.sha256
+
+      - name: Commit build output to fix branch
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dist/VisibleTraders-1.3.2-cartographer-fix.1.jar dist/VisibleTraders-1.3.2-cartographer-fix.1.jar.sha256
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'Build Visible Traders 1.3.2 cartographer fix jar'
+          git push origin HEAD:fix/cartographer-air-trade
