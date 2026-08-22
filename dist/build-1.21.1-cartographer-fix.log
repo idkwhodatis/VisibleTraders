@@ -26,8 +26,8 @@ Please make sure to read and understand the following license:
 > Task :jar
 > Task :processIncludeJars
 > Task :remapJar
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/gradle_build-1787373503858.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/gradle_build-1787373738604.json
 
-BUILD SUCCESSFUL in 1m 14s
+BUILD SUCCESSFUL in 1m 6s
 6 actionable tasks: 6 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.0/userguide/configuration_cache_enabling.html
