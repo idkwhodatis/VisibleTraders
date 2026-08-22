@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.ramixin.visibletraders.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractVillagerMixin",
+    "ClientSideMerchantMixin",
+    "MerchantContainerMixin",
+    "MerchantMenuMixin",
+    "MerchantMixin",
+    "VillagerMixin",
+    "ZombieMixin",
+    "ZombieVillagerMixin",
+    "listings.TreasureMapForEmeraldsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Fabric-Jar-Type: sources
+Fabric-Loom-Client-Only-Entries: assets/visibletraders/lang/de_de.json;a
+ ssets/visibletraders/lang/en_us.json;assets/visibletraders/lang/es_es.j
+ son;assets/visibletraders/lang/fr_fr.json;assets/visibletraders/lang/it
+ _it.json;assets/visibletraders/lang/ja_jp.json;assets/visibletraders/la
+ ng/ko_kr.json;assets/visibletraders/lang/pt_br.json;assets/visibletrade
+ rs/lang/ru_ru.json;assets/visibletraders/lang/uk_ua.json;assets/visible
+ traders/lang/zh_cn.json;net/ramixin/visibletraders/mixins/client/Mercha
+ ntScreenMixin.java;visibletraders.client.mixins.json
+Fabric-Loom-Split-Environment: true
+Fabric-Gradle-Version: 9.2.0
+Fabric-Loom-Version: 1.14.10
+Fabric-Mixin-Compile-Extensions-Version: 0.6.0
+Fabric-Minecraft-Version: 1.21.1
+Fabric-Tiny-Remapper-Version: 0.12.2
+Fabric-Loader-Version: 0.18.4
+Fabric-Mixin-Version: 0.17.0+mixin.0.8.7
+Fabric-Mixin-Group: net.fabricmc
+Fabric-Mapping-Namespace: intermediary
+

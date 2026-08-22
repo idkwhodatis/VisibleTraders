@@ -1,0 +1,2 @@
+339466b804df5d9320cfaa79e259b21ed7f9a37d6c7dd62c00c05ac641e34792  /tmp/visibletraders-sources.jar
+39d70e06c8c39af5575431ceded4a14c662b6e2ccf530b65f4551789066e0f10  /tmp/visibletraders.jar
