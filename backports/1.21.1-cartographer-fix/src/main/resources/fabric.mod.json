@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "visibletraders_cartographer_fix",
+  "version": "1.0.0",
+  "name": "Visible Traders Cartographer Fix",
+  "description": "Backport fix for async cartographer trades leaking AIR placeholders into villager offers.",
+  "environment": "*",
+  "mixins": [
+    "visibletraders-cartographer-fix.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.2",
+    "minecraft": "~1.21.1",
+    "visibletraders": "1.3.2"
+  }
+}
